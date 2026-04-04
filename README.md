@@ -1,0 +1,2 @@
+# forca_competitiva
+
