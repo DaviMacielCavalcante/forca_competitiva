@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
-from ..game.hangman import set_word, add_to_queue, start_game, is_game_started
-from ..lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players
+from ..game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_round_over, rotate_host, reset_round
+from ..lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state
+from .udp_client import start_timer
 import socket
 import json
 
@@ -47,9 +48,34 @@ def handle_connection(conn, addr):
                 if len(players) >= 2 and not is_game_started():
                     host_id = start_game()
                     notify_host(host_id)
+                    start_timer()
                 
             if before_as_dict["acao"] == "palavra":
                 set_word(before_as_dict["palavra"])
+                
+            if before_as_dict["acao"] == "letra":
+                
+                guess = guess_letter(before_as_dict["letra"])
+                
+                if guess["correct"]:
+                    
+                    score = calculate_score(100)
+                    
+                    players[player_id].score += score
+                    guess["score"] = score
+                    
+                broadcast_game_state(guess)
+                    
+                is_over, msg = is_round_over(players_quantity= len(players))
+                
+                    
+                if is_over:
+                    guess["acao"] = msg["acao"]
+                    broadcast_game_state(guess)
+                    new_host_id = rotate_host()                   
+                    notify_host(new_host_id)                    
+                    reset_round()              
+                    start_timer()                        
                 
             message.append(before)
             

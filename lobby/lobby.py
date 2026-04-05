@@ -9,6 +9,7 @@ class Player:
     name: str
     ip: str
     socket: socket.socket
+    score: int = 0
      
      
 players: dict[str, Player] = {}
@@ -57,3 +58,20 @@ def notify_host(player_id: str):
     notification_data = notification_json.encode()
     
     players[player_id].socket.sendall(notification_data)
+    
+def broadcast_game_state(state: dict):
+    
+    players_in_lobby = [
+        {
+            "id": player_id,
+            "nome": players[player_id].name
+        } 
+        for player_id in players]
+    
+    state_json = json.dumps(state) + "\n"
+    
+    state_bytes = state_json.encode()
+    
+    for player in players_in_lobby:
+        
+        players[player["id"]].socket.sendall(state_bytes)
