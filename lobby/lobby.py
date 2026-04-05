@@ -45,3 +45,15 @@ def broadcast_lobby():
     for player in players_in_lobby:
         
         players[player["id"]].socket.sendall(players_in_lobby_bytes)
+        
+def notify_host(player_id: str):
+    
+    notification = {
+        "acao": "voce_e_o_host"
+    }
+    
+    notification_json = json.dumps(notification)+"\n"
+    
+    notification_data = notification_json.encode()
+    
+    players[player_id].socket.sendall(notification_data)

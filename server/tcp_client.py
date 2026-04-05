@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
-from ..lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby
+from ..game.hangman import set_word, add_to_queue, start_game, is_game_started
+from ..lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players
 import socket
 import json
 
@@ -40,6 +41,15 @@ def handle_connection(conn, addr):
                 )
                 
                 broadcast_lobby()
+                
+                add_to_queue(player_id=player_id)
+                
+                if len(players) >= 2 and not is_game_started():
+                    host_id = start_game()
+                    notify_host(host_id)
+                
+            if before_as_dict["acao"] == "palavra":
+                set_word(before_as_dict["palavra"])
                 
             message.append(before)
             
