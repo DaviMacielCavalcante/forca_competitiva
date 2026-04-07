@@ -1,10 +1,9 @@
-
+import arcade
 import sys
 
-sys.path.append('./client/views')
+sys.path.append('../client/views')
 
-import arcade
-from menu_view import MenuView
+from views.menu_view import MenuView
 
 # Constantes de configuração da janela
 SCREEN_WIDTH = 1024
