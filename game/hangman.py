@@ -58,12 +58,17 @@ def guess_letter(letter: str):
     
         global remaining_attemps
         global revealed_letters
+        global players_who_guessed
         
         is_guess_correct = False
         
         
         if letter in used_letters:
-            return
+            return {
+            "revealed_letters": revealed_letters,
+            "correct": False,
+            "remaining_attempts": remaining_attemps
+        }
         
         used_letters.add(letter)
         
@@ -137,4 +142,4 @@ def decrement_time():
     
     global remaining_time
     
-    remaining_time -1;
+    remaining_time -=1;

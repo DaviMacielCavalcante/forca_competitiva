@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
-from ..game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_round_over, rotate_host, reset_round
-from ..lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state
-from .udp_client import start_timer
+from game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_round_over, rotate_host, reset_round
+from lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state
+from server.udp_client import start_timer
 import socket
 import json
 
@@ -91,12 +91,14 @@ def handle_connection(conn, addr):
                 
             buffer = after
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("TCP_PORT", 32348))
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(("0.0.0.0", port))
+    server.listen()
 
-server.bind(("0.0.0.0", 32348))
-server.listen()
-            
-with ThreadPoolExecutor(max_workers=10) as thread:
-    while True:
-        conn, addr = server.accept()
-        thread.submit(handle_connection, conn, addr)
+    with ThreadPoolExecutor(max_workers=10) as thread:
+        while True:
+            conn, addr = server.accept()
+            thread.submit(handle_connection, conn, addr)
