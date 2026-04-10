@@ -1,7 +1,6 @@
 import arcade
 import arcade.gui
 # Importando a tela do jogo para fazer a transição
-from .game_view import GameView 
 
 class HostView(arcade.View):
     def __init__(self):
@@ -48,6 +47,7 @@ class HostView(arcade.View):
         self.manager.disable()
 
     def on_click_submit(self, event):
+        from .game_view import GameView 
         word = self.word_input.text.strip().upper()
         if not word:
             return  # Evita que o host envie uma palavra vazia
