@@ -10,7 +10,7 @@ class Player:
     ip: str
     socket: socket.socket
     score: int = 0
-     
+    remaining_attempts: int = 3
      
 players: dict[str, Player] = {}
 

@@ -9,9 +9,9 @@ current_word: str = ""
 game_started: bool = False
 revealed_letters: list = []
 used_letters: set = set()
-remaining_attemps: int = 6
 remaining_time: int = 60
 players_who_guessed: int = 0
+host_id: str
 
 def add_to_queue(player_id: str):
     
@@ -37,9 +37,13 @@ def set_word(word: str):
     
     with word_lock:
         current_word = word
+        
+def get_host_id():
+    return host_id
 
 def start_game():
     
+    global host_id    
     global game_started
     
     game_started = True
@@ -52,11 +56,9 @@ def is_game_started():
     
     return game_started
 
-def guess_letter(letter: str):
+def guess_letter(letter: str, player: object, host: object):
     
     with guess_lock:
-    
-        global remaining_attemps
         global revealed_letters
         global players_who_guessed
         
@@ -67,7 +69,7 @@ def guess_letter(letter: str):
             return {
             "revealed_letters": revealed_letters,
             "correct": False,
-            "remaining_attempts": remaining_attemps
+            "remaining_attempts": player.remaining_attempts
         }
         
         used_letters.add(letter)
@@ -81,12 +83,14 @@ def guess_letter(letter: str):
                     
                     
         else :
-            remaining_attemps -= 1
+            player.remaining_attempts -= 1
+            if player.remaining_attempts == 0:
+                host.score += 100 *(60 - remaining_time) / 60
             
         return {
             "revealed_letters": revealed_letters,
             "correct": is_guess_correct,
-            "remaining_attempts": remaining_attemps
+            "remaining_attempts": player.remaining_attempts
         }
         
 def calculate_score(score: int):
@@ -100,10 +104,15 @@ def calculate_score(score: int):
     
     return score
 
-def is_game_over() -> tuple[bool, dict]:
+def is_game_over(players: list) -> tuple[bool, dict]:
+    
+    players_defeated: bool = all(
+        p.remaining_attempts == 0 for p in players
+    )
+    
     if revealed_letters and "_" not in revealed_letters:
         return True, {"acao": "game_over_word_guessed"}
-    if remaining_attemps == 0:
+    if players_defeated:
         return True, {"acao": "game_over_attempts_exhausted"}
     return False, {}
 
@@ -114,22 +123,24 @@ def reset_time():
 def is_word_set() -> bool:
     return bool(current_word)
 
-def reset_round():
+def reset_round(players: list):
 
-    global remaining_attemps
+
     global remaining_time
     global players_who_guessed
     global game_started
     global current_word
     global revealed_letters
 
-    remaining_attemps = 6
     remaining_time = 60
     players_who_guessed = 0
     game_started = False
     current_word = ""
     revealed_letters = []
     used_letters.clear()
+    
+    for player in players:
+        player.remaining_attempts = 3
     
 def get_remaining_time():
     

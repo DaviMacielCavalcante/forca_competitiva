@@ -57,7 +57,7 @@ def server():
     port = find_free_port()
     env = {**os.environ, "TCP_PORT": str(port)}
     proc = subprocess.Popen(
-        [sys.executable, "-m", "server.tcp_client"],
+        [sys.executable, "-m", "server.tcp_server"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.PIPE,
         env=env,
@@ -192,7 +192,7 @@ class TestGameFlow:
         game_states = [m for m in messages if isinstance(m, dict) and "revealed_letters" in m]
         assert len(game_states) >= 1
         assert game_states[0]["correct"] is False
-        assert game_states[0]["remaining_attempts"] == 5
+        assert game_states[0]["remaining_attempts"] == 2
 
     def test_duplicate_letter_does_not_decrement_attempts(self, server):
         """Sending the same letter twice should not reduce attempts on the second send."""
@@ -221,4 +221,4 @@ class TestGameFlow:
 
         game_states = [m for m in messages if isinstance(m, dict) and "revealed_letters" in m]
         assert len(game_states) >= 1
-        assert game_states[0]["remaining_attempts"] == 5
+        assert game_states[0]["remaining_attempts"] == 2

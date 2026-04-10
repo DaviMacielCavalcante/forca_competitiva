@@ -1,6 +1,14 @@
 import pytest
 from collections import deque
+from dataclasses import dataclass
 from game import hangman
+
+
+@dataclass
+class FakePlayer:
+    """Minimal Player stand-in for unit tests."""
+    remaining_attempts: int = 3
+    score: int = 0
 
 
 @pytest.fixture(autouse=True)
@@ -11,7 +19,6 @@ def reset_game_state():
     hangman.game_started = False
     hangman.revealed_letters = []
     hangman.used_letters = set()
-    hangman.remaining_attemps = 6
     hangman.remaining_time = 60
     hangman.players_who_guessed = 0
 
@@ -43,105 +50,178 @@ class TestGuessLetter:
     def test_correct_guess_reveals_letter(self):
         """A correct guess should reveal the letter in the right positions."""
         hangman.set_word("gato")
-        result = hangman.guess_letter("a")
+        player = FakePlayer()
+        host = FakePlayer()
+        result = hangman.guess_letter("a", player, host)
         assert result["revealed_letters"] == ["_", "a", "_", "_"]
         assert result["correct"] is True
 
     def test_correct_guess_does_not_decrement_attempts(self):
         """A correct guess should not reduce remaining attempts."""
         hangman.set_word("gato")
-        hangman.guess_letter("a")
-        assert hangman.remaining_attemps == 6
+        player = FakePlayer()
+        host = FakePlayer()
+        hangman.guess_letter("a", player, host)
+        assert player.remaining_attempts == 3
 
     def test_wrong_guess_decrements_attempts(self):
-        """A wrong guess should decrement remaining_attemps by 1."""
+        """A wrong guess should decrement the player's remaining_attempts by 1."""
         hangman.set_word("gato")
-        result = hangman.guess_letter("z")
+        player = FakePlayer()
+        host = FakePlayer()
+        result = hangman.guess_letter("z", player, host)
         assert result["correct"] is False
-        assert result["remaining_attempts"] == 5
+        assert result["remaining_attempts"] == 2
 
     def test_duplicate_letter_returns_current_state(self):
         """A duplicate guess should return the current state without changing anything."""
         hangman.set_word("gato")
-        hangman.guess_letter("a")
-        attempts_before = hangman.remaining_attemps
-        result = hangman.guess_letter("a")
+        player = FakePlayer()
+        host = FakePlayer()
+        hangman.guess_letter("a", player, host)
+        attempts_before = player.remaining_attempts
+        result = hangman.guess_letter("a", player, host)
         assert result["correct"] is False
         assert result["remaining_attempts"] == attempts_before
 
     def test_duplicate_letter_does_not_decrement_attempts(self):
         """A duplicate guess should not decrement attempts."""
         hangman.set_word("gato")
-        hangman.guess_letter("z")
-        attempts_after_first = hangman.remaining_attemps
-        hangman.guess_letter("z")
-        assert hangman.remaining_attemps == attempts_after_first
+        player = FakePlayer()
+        host = FakePlayer()
+        hangman.guess_letter("z", player, host)
+        attempts_after_first = player.remaining_attempts
+        hangman.guess_letter("z", player, host)
+        assert player.remaining_attempts == attempts_after_first
 
     def test_correct_guess_increments_players_who_guessed(self):
         """A correct guess should increment players_who_guessed."""
         hangman.set_word("gato")
-        hangman.guess_letter("a")
+        player = FakePlayer()
+        host = FakePlayer()
+        hangman.guess_letter("a", player, host)
         assert hangman.players_who_guessed == 1
 
     def test_letter_appearing_multiple_times_is_fully_revealed(self):
         """A correct guess should reveal all occurrences of the letter."""
         hangman.set_word("banana")
-        result = hangman.guess_letter("a")
+        player = FakePlayer()
+        host = FakePlayer()
+        result = hangman.guess_letter("a", player, host)
         assert result["revealed_letters"] == ["_", "a", "_", "a", "_", "a"]
 
 
-# --- is_round_over ---
+# --- host scoring on player elimination ---
 
-class TestIsRoundOver:
+class TestHostScoring:
+
+    def test_host_gains_points_when_player_exhausts_attempts(self):
+        """Host should gain points when a player's remaining_attempts reaches 0."""
+        hangman.set_word("gato")
+        player = FakePlayer(remaining_attempts=1)
+        host = FakePlayer()
+        hangman.remaining_time = 30
+        hangman.guess_letter("z", player, host)
+        expected_score = 100 * (60 - 30) / 60  # 50.0
+        assert host.score == expected_score
+
+    def test_host_gains_no_points_when_player_still_has_attempts(self):
+        """Host should not gain points if the player still has attempts left."""
+        hangman.set_word("gato")
+        player = FakePlayer(remaining_attempts=3)
+        host = FakePlayer()
+        hangman.guess_letter("z", player, host)
+        assert host.score == 0
+
+    def test_host_gains_max_points_when_player_fails_at_end_of_round(self):
+        """Host should gain ~100 points if the player fails at the very end of the timer."""
+        hangman.set_word("gato")
+        player = FakePlayer(remaining_attempts=1)
+        host = FakePlayer()
+        hangman.remaining_time = 1
+        hangman.guess_letter("z", player, host)
+        expected_score = 100 * (60 - 1) / 60
+        assert host.score == pytest.approx(expected_score)
+
+    def test_host_gains_zero_points_when_player_fails_instantly(self):
+        """Host should gain 0 points if the player fails immediately (full time remaining)."""
+        hangman.set_word("gato")
+        player = FakePlayer(remaining_attempts=1)
+        host = FakePlayer()
+        hangman.remaining_time = 60
+        hangman.guess_letter("z", player, host)
+        assert host.score == 0.0
+
+
+# --- is_game_over ---
+
+class TestIsGameOver:
 
     def test_not_over_at_start(self):
-        """Round should not be over at game start."""
-        is_over, _ = hangman.is_round_over(players_quantity=2)
+        """Game should not be over at start."""
+        players = [FakePlayer(), FakePlayer()]
+        is_over, _ = hangman.is_game_over(players)
         assert is_over is False
 
-    def test_over_when_all_players_guessed(self):
-        """Round should end when all players have guessed correctly."""
-        hangman.players_who_guessed = 2
-        is_over, msg = hangman.is_round_over(players_quantity=2)
+    def test_over_when_word_fully_revealed(self):
+        """Game should end when the word is fully guessed."""
+        hangman.set_word("ab")
+        player = FakePlayer()
+        host = FakePlayer()
+        hangman.guess_letter("a", player, host)
+        hangman.guess_letter("b", player, host)
+        is_over, msg = hangman.is_game_over([player])
         assert is_over is True
-        assert "all" in msg["acao"]
+        assert msg["acao"] == "game_over_word_guessed"
 
-    def test_over_when_attempts_exhausted(self):
-        """Round should end when remaining attempts reach zero."""
-        hangman.remaining_attemps = 0
-        is_over, msg = hangman.is_round_over(players_quantity=2)
+    def test_over_when_all_players_exhausted(self):
+        """Game should end when all players have 0 remaining attempts."""
+        players = [FakePlayer(remaining_attempts=0), FakePlayer(remaining_attempts=0)]
+        is_over, msg = hangman.is_game_over(players)
         assert is_over is True
-        assert "failed" in msg["acao"]
+        assert msg["acao"] == "game_over_attempts_exhausted"
 
-    def test_over_when_time_runs_out(self):
-        """Round should end when remaining time reaches zero."""
-        hangman.remaining_time = 0
-        is_over, msg = hangman.is_round_over(players_quantity=2)
-        assert is_over is True
-        assert "failed" in msg["acao"]
+    def test_not_over_when_some_players_have_attempts(self):
+        """Game should not end if at least one player still has attempts."""
+        players = [FakePlayer(remaining_attempts=0), FakePlayer(remaining_attempts=2)]
+        is_over, _ = hangman.is_game_over(players)
+        assert is_over is False
 
 
 # --- reset_round ---
 
 class TestResetRound:
 
-    def test_resets_attempts(self):
-        """reset_round() should restore remaining_attemps to 6."""
-        hangman.remaining_attemps = 0
-        hangman.reset_round()
-        assert hangman.remaining_attemps == 6
+    def test_resets_player_attempts(self):
+        """reset_round() should restore each player's remaining_attempts to 3."""
+        players = [FakePlayer(remaining_attempts=0), FakePlayer(remaining_attempts=1)]
+        hangman.reset_round(players)
+        for p in players:
+            assert p.remaining_attempts == 3
 
     def test_resets_time(self):
         """reset_round() should restore remaining_time to 60."""
         hangman.remaining_time = 0
-        hangman.reset_round()
+        hangman.reset_round([])
         assert hangman.remaining_time == 60
 
     def test_resets_players_who_guessed(self):
         """reset_round() should reset players_who_guessed to 0."""
         hangman.players_who_guessed = 3
-        hangman.reset_round()
+        hangman.reset_round([])
         assert hangman.players_who_guessed == 0
+
+
+# --- get_host_id ---
+
+class TestGetHostId:
+
+    def test_returns_host_id_after_start(self):
+        """get_host_id() should return the current host's ID after start_game()."""
+        hangman.add_to_queue("player-1")
+        hangman.add_to_queue("player-2")
+        hangman.start_game()
+        assert hangman.get_host_id() == "player-1"
 
 
 # --- calculate_score ---

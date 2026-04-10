@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
-from game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_game_over, rotate_host, reset_round, reset_time, is_word_set, get_remaining_time
+from game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_game_over, rotate_host, reset_round, reset_time, is_word_set, get_remaining_time, get_host_id
 from lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state
-from server.udp_client import start_timer, stop_timer
+from server.udp_server import start_timer, stop_timer
 from loguru import logger
 import socket
 import json
@@ -62,7 +62,7 @@ def handle_connection(conn, addr):
 
             if before_as_dict["acao"] == "letra" and is_word_set():
 
-                guess = guess_letter(before_as_dict["letra"])
+                guess = guess_letter(before_as_dict["letra"], player=players.get(player_id), host=players[get_host_id()])
 
                 if guess["correct"]:
 
@@ -73,7 +73,7 @@ def handle_connection(conn, addr):
 
                 broadcast_game_state(guess)
 
-                game_over, reason = is_game_over()
+                game_over, reason = is_game_over(players=players)
 
                 if game_over:
                     guess["acao"] = reason["acao"]
@@ -81,7 +81,7 @@ def handle_connection(conn, addr):
                     stop_timer()
                     new_host_id = rotate_host()
                     notify_host(new_host_id)
-                    reset_round()
+                    reset_round(players=players)
                     logger.debug("jogo encerrado ({}), novo host: {}", reason["acao"], new_host_id)
                 elif get_remaining_time() == 0:
                     reset_time()
