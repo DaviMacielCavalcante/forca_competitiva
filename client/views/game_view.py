@@ -5,7 +5,7 @@ from .host_view import HostView
 from .podium_view import PodiumView 
 
 class GameView(arcade.View):
-    def __init__(self, secret_word="PALAVRA", is_host=False, scores=None, current_round=1, total_rounds=4):
+    def __init__(self, secret_word="PALAVRA", is_host=True, scores=None, current_round=1, total_rounds=4):
         super().__init__()
         self.manager = arcade.gui.UIManager()
         
@@ -39,11 +39,13 @@ class GameView(arcade.View):
             text=f"Tempo: {int(self.time_left)}s", font_size=18, text_color=(0, 93, 164), bold=True
         )
         self.status_box.add(self.timer_label)
-
-        self.attempts_label = arcade.gui.UILabel(
-            text=f"Tentativas: {self.attempts_left}/3", font_size=18, text_color=arcade.color.DARK_RED
-        )
-        self.status_box.add(self.attempts_label)
+        
+        if not self.is_host:
+            self.attempts_label = arcade.gui.UILabel(
+                text=f"Tentativas: {self.attempts_left}/3", font_size=18, text_color=arcade.color.DARK_RED
+            )
+            self.status_box.add(self.attempts_label)
+        
         self.v_box.add(self.status_box)
 
         # 2. Tela da Forca (Tiles)
@@ -94,7 +96,8 @@ class GameView(arcade.View):
 
     def update_interface_text(self):
         self.timer_label.text = f"Tempo: {int(self.time_left)}s"
-        self.attempts_label.text = f"Tentativas: {self.attempts_left}/3"
+        if not self.is_host:
+            self.attempts_label.text = f"Tentativas: {self.attempts_left}/3"
 
     def on_guess_submit(self, event):
         # Lógica resumida (idêntica ao passo anterior)

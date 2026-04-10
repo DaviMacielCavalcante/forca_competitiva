@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 from .game_view import GameView 
-# from .podium_view import PodiumView # Vamos usar no futuro para a última rodada
+from .podium_view import PodiumView # Vamos usar no futuro para a última rodada
 
 class PlayerWaitingView(arcade.View):
     def __init__(self, scores=None, current_round=1, total_rounds=4):

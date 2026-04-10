@@ -4,7 +4,7 @@ from .host_view import HostView
 from .player_waiting_view import PlayerWaitingView
 
 class MenuView(arcade.View):
-    def __init__(self, is_host=False):
+    def __init__(self, is_host=True):
         super().__init__()
         self.manager = arcade.gui.UIManager()
         self.is_host = is_host 
@@ -94,6 +94,7 @@ class MenuView(arcade.View):
         self.manager.draw()
 
     def on_click_connect(self, event):
+        # TODO: FAZER A CONEXÃO VIA REDE E EXIBIR NA TELA
         codigo_inserido = self.code_input.text
         print(f"Tentando estabelecer conexão com o código: {codigo_inserido}")
 

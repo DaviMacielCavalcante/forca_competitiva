@@ -54,7 +54,7 @@ class HostView(arcade.View):
             
         print(f"Palavra escolhida enviada ao servidor: {word}")
         
-        # TODO (REDE): Aqui o seu cliente WebSocket fará um "emit" enviando a palavra
+        # TODO (REDE): Aqui o cliente WebSocket fará um "emit" enviando a palavra
         # para que o servidor possa transmiti-la para os outros jogadores.
         
         # Transita o Host para a tela de jogo informando a palavra secreta
