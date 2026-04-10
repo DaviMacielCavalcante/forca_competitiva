@@ -100,37 +100,36 @@ def calculate_score(score: int):
     
     return score
 
-def is_round_over(players_quantity: int):
-    
-    global players_who_guessed
-    global remaining_attemps
+def is_game_over() -> tuple[bool, dict]:
+    if revealed_letters and "_" not in revealed_letters:
+        return True, {"acao": "game_over_word_guessed"}
+    if remaining_attemps == 0:
+        return True, {"acao": "game_over_attempts_exhausted"}
+    return False, {}
+
+def reset_time():
     global remaining_time
-    
-    
-    
-    if (players_who_guessed == players_quantity):
-        return True, {
-            "acao": "round_over_all_plasyers_guessed"
-        }
-        
-    if (remaining_attemps == 0) or (remaining_time == 0):
-        return True, {
-            "acao": "round_over_players_failed"
-        }
-    
-    return False, {
-        "acao": "round_isn't_over"
-    }
+    remaining_time = 60
+
+def is_word_set() -> bool:
+    return bool(current_word)
 
 def reset_round():
-    
+
     global remaining_attemps
     global remaining_time
     global players_who_guessed
-    
+    global game_started
+    global current_word
+    global revealed_letters
+
     remaining_attemps = 6
     remaining_time = 60
-    players_who_guessed = 0    
+    players_who_guessed = 0
+    game_started = False
+    current_word = ""
+    revealed_letters = []
+    used_letters.clear()
     
 def get_remaining_time():
     

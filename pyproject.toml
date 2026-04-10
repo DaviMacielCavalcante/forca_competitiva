@@ -1,3 +1,6 @@
+[tool.hatch.build.targets.wheel]
+packages = ["game", "lobby", "server"]
+
 [project]
 name = "forca-competitiva"
 version = "0.1.0"
