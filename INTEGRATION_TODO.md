@@ -23,10 +23,10 @@ Todas as views dependem do `NetworkClient`, então **Davi faz primeiro a Fase 0*
 
 #### Fase 0 — Contrato do `NetworkClient` (Davi, primeiro commit)
 
-- [ ] Criar `client/network.py` com:
-  - [ ] Classe `NetworkClient` contendo as assinaturas (`connect`, `send_word`, `send_letter`, `poll`, `disconnect`) com corpo `pass`/`return []`.
-  - [ ] Classe `FakeNetworkClient` com a mesma interface, mas que permite enfileirar mensagens manualmente (ex.: `fake.inject({"acao": "voce_e_o_host"})`) para que as views sejam testadas sem servidor rodando.
-- [ ] Abrir PR/branch curta só com esse stub para destravar os outros dois devs.
+- [x] Criar `client/network.py` com:
+  - [x] Classe `NetworkClient` contendo as assinaturas (`connect`, `send_word`, `send_letter`, `poll`, `disconnect`) com corpo `pass`/`return []`.
+  - [x] Classe `FakeNetworkClient` com a mesma interface, mas que permite enfileirar mensagens manualmente (ex.: `fake.inject({"acao": "voce_e_o_host"})`) para que as views sejam testadas sem servidor rodando.
+- [x] Abrir PR/branch curta só com esse stub para destravar os outros dois devs.
 
 Depois da Fase 0, os três podem trabalhar em branches independentes.
 
