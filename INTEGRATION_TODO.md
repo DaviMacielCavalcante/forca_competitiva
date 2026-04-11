@@ -53,15 +53,15 @@ Mensagens são JSON delimitadas por `\n`.
 
 ### 1. Módulo de rede do cliente — `client/network.py` — **@Davi**
 
-- [ ] Criar classe `NetworkClient` com:
-  - [ ] Socket TCP + thread leitora que faz parse delimitado por `\n` e enfileira dicts numa `queue.Queue` thread-safe.
-  - [ ] Socket UDP escutando na porta 32350, também enfileirando `{"tempo": N}`.
-  - [ ] Método `connect(host: str, port: int, name: str)` — abre TCP, inicia threads, envia `{"acao": "entrar", "nome": ...}`.
-  - [ ] Método `send_word(word: str)` — envia `{"acao": "palavra", "palavra": word}`.
-  - [ ] Método `send_letter(letter: str)` — envia `{"acao": "letra", "letra": letter}`.
-  - [ ] Método `poll() -> list[dict]` — drena a fila sem bloquear (para ser chamado em `on_update`).
-  - [ ] Método `disconnect()` — fecha sockets e encerra threads.
-- [ ] Tratar `ConnectionRefusedError` / `ConnectionResetError` / JSON inválido sem derrubar a thread.
+- [x] Criar classe `NetworkClient` com:
+  - [x] Socket TCP + thread leitora que faz parse delimitado por `\n` e enfileira dicts numa `queue.Queue` thread-safe.
+  - [x] Socket UDP escutando na porta 32350, também enfileirando `{"tempo": N}`.
+  - [x] Método `connect(host: str, port: int, name: str)` — abre TCP, inicia threads, envia `{"acao": "entrar", "nome": ...}`.
+  - [x] Método `send_word(word: str)` — envia `{"acao": "palavra", "palavra": word}`.
+  - [x] Método `send_letter(letter: str)` — envia `{"acao": "letra", "letra": letter}`.
+  - [x] Método `poll() -> list[dict]` — drena a fila sem bloquear (para ser chamado em `on_update`).
+  - [x] Método `disconnect()` — fecha sockets e encerra threads.
+- [x] Tratar `ConnectionRefusedError` / `ConnectionResetError` / JSON inválido sem derrubar a thread.
 - [ ] Guardar a instância em `window.network` para ser compartilhada entre as views.
 
 ### 2. `MenuView` — [client/views/menu_view.py](client/views/menu_view.py) — **@João Miguel**
