@@ -2,12 +2,13 @@ import arcade
 import arcade.gui
 from .host_view import HostView
 from .player_waiting_view import PlayerWaitingView
+from network import NetworkClient
 
 class MenuView(arcade.View):
-    def __init__(self, is_host=True):
+    def __init__(self):
         super().__init__()
         self.manager = arcade.gui.UIManager()
-        self.is_host = is_host 
+        self.is_host = False
         
         # Layout central (Elementos principais)
         self.v_box = arcade.gui.UIBoxLayout(space_between=16)
@@ -19,23 +20,34 @@ class MenuView(arcade.View):
         self.v_box.add(subtitle)
 
         # Input Text para inserir código
-        self.code_input = arcade.gui.UIInputText(
-            width=250, height=40, text="Ex: CODIGO-123", text_color=arcade.color.BLACK
+    
+        self.nome_input = arcade.gui.UIInputText(
+            width=250, height=40, text="Digite o seu nome", text_color=arcade.color.BLACK
         )
-        self.code_input.with_background(color=arcade.color.WHITE)
-        self.code_input.with_padding(top=10, right=10, bottom=10, left=10)
-        self.v_box.add(self.code_input)
 
-        connect_button = arcade.gui.UIFlatButton(
+        self.nome_input.with_background(color=arcade.color.WHITE)
+        self.nome_input.with_padding(top=10, right=10, bottom=10, left=10)
+        self.v_box.add(self.nome_input)
+
+        self.host_input = arcade.gui.UIInputText(
+            width=250, height=40, text="Digite o endereço e porta do host", text_color=arcade.color.BLACK
+        )
+
+        self.host_input.with_background(color=arcade.color.WHITE)
+        self.host_input.with_padding(top=10, right=10, bottom=10, left=10)
+        self.v_box.add(self.host_input)
+
+        self.connect_button = arcade.gui.UIFlatButton(
             text="Conectar", width=250,
             style={
                 "normal": {"bg_color": (0, 93, 164), "font_color": arcade.color.WHITE},
                 "hover": {"bg_color": (0, 110, 190), "font_color": arcade.color.WHITE},
-                "press": {"bg_color": (0, 75, 140), "font_color": arcade.color.WHITE}
+                "press": {"bg_color": (0, 75, 140), "font_color": arcade.color.WHITE},
+                "disabled": {"bg_color": arcade.color.GRAY, "font_color": arcade.color.LIGHT_GRAY}
             }
         )
-        connect_button.on_click = self.on_click_connect
-        self.v_box.add(connect_button)
+        self.connect_button.on_click = self.on_click_connect
+        self.v_box.add(self.connect_button)
 
         # Cartão de Jogadores
         self.players_box = arcade.gui.UIBoxLayout(space_between=12)
@@ -48,7 +60,7 @@ class MenuView(arcade.View):
         self.v_box.add(self.players_box)
 
         # Botão Iniciar Partida
-        start_button = arcade.gui.UIFlatButton(
+        self.start_button = arcade.gui.UIFlatButton(
             text="Iniciar Partida", width=250,
             style={
                 "normal": {"bg_color": (0, 93, 164), "font_color": arcade.color.WHITE},
@@ -56,8 +68,9 @@ class MenuView(arcade.View):
                 "press": {"bg_color": (0, 75, 140), "font_color": arcade.color.WHITE}
             }
         )
-        start_button.on_click = self.on_click_start
-        self.v_box.add(start_button)
+        self.start_button.on_click = self.on_click_start
+        self.v_box.add(self.start_button)
+        self.start_button.visible = False
 
         # --- NOVO: BOTÃO DE SAIR (EXIT) ---
         # Botão mais discreto, estilo "Secundário" (Fundo branco/vermelho)
@@ -93,15 +106,49 @@ class MenuView(arcade.View):
         self.clear()
         self.manager.draw()
 
+    def on_update(self, delta_time):
+        if self.window.network is None:
+            return
+
+        for msg in self.window.network.poll():
+            if isinstance(msg, list):
+                # lista de jogadores do lobby
+                self.players_box.clear()
+                for i, player in enumerate(msg, start=1):
+                    label = arcade.gui.UILabel(
+                        text=f"{i}. {player['nome']}",
+                        font_size=16,
+                        text_color=arcade.color.BLACK
+                    )
+                    self.players_box.add(label)
+
+            elif isinstance(msg, dict) and msg.get("acao") == "voce_e_o_host":
+                self.is_host = True
+                self.start_button.visible = True
+
     def on_click_connect(self, event):
-        # TODO: FAZER A CONEXÃO VIA REDE E EXIBIR NA TELA
-        codigo_inserido = self.code_input.text
-        print(f"Tentando estabelecer conexão com o código: {codigo_inserido}")
+        nome = self.nome_input.text.strip()
+        host_str = self.host_input.text.strip()
+
+        if not nome or not host_str:
+            print("Nome e host não podem estar vazios.")
+            return
+
+        try:
+            host, port_str = host_str.split(":")
+            port = int(port_str)
+        except ValueError:
+            print("Host inválido. Use o formato 127.0.0.1:32348")
+            return
+
+        self.window.network = NetworkClient()
+        self.window.network.connect(host, port, nome)
+        self.connect_button.disabled = True
 
     def on_click_start(self, event):
         print("Iniciando a partida...")
         if self.is_host:
-            self.window.show_view(HostView())
+            self.window.show_view(HostView(self.window.network))
         else:
             self.window.show_view(PlayerWaitingView())
 
