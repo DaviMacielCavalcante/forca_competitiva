@@ -1,9 +1,6 @@
-import arcade
-import sys
-
-sys.path.append('../client/views')
-
 from views.menu_view import MenuView
+import arcade
+
 
 # Constantes de configuração da janela
 SCREEN_WIDTH = 1024
@@ -17,6 +14,7 @@ def main():
     
     # Instancia e exibe a tela de Menu
     menu_view = MenuView()
+    window.network = None
     window.show_view(menu_view)
     
     # Inicia o loop da engine

@@ -115,8 +115,8 @@ Mensagens são JSON delimitadas por `\n`.
 
 ### 7. `client/main.py` — **@Davi**
 
-- [ ] Inicializar `window.network = None` antes de mostrar a `MenuView`.
-- [ ] Garantir que o `sys.path.append('../client/views')` continue funcionando ou substituir por import relativo limpo.
+- [x] Inicializar `window.network = None` antes de mostrar a `MenuView`.
+- [x] Remover `sys.path.append('../client/views')` (e o `import sys` que ficou órfão). Motivo: caminhos relativos são resolvidos a partir do **cwd** em que o `python` foi invocado, não do diretório do script — então `'../client/views'` apontava pra fora do repositório e nem existia. Mesmo assim a importação `from views.menu_view import MenuView` funcionava, porque quando se roda `python client/main.py` a partir do repo root, o Python já adiciona automaticamente o diretório do script (`client/`) em `sys.path[0]`, e `client/views/` é um pacote (tem `__init__.py`). O `append` era gambiarra inútil: não fazia diferença nenhuma e ainda poluía o `sys.path` com um caminho inexistente.
 
 ## Pontos em aberto (pós-integração)
 
