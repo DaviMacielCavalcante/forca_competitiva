@@ -3,8 +3,9 @@ import arcade.gui
 # Importando a tela do jogo para fazer a transição
 
 class HostView(arcade.View):
-    def __init__(self):
+    def __init__(self, network):
         super().__init__()
+        self.network = network
         self.manager = arcade.gui.UIManager()
         self.v_box = arcade.gui.UIBoxLayout(space_between=20)
 
@@ -52,13 +53,13 @@ class HostView(arcade.View):
         if not word:
             return  # Evita que o host envie uma palavra vazia
             
-        print(f"Palavra escolhida enviada ao servidor: {word}")
+        self.network.send_word(word)
         
         # TODO (REDE): Aqui o cliente WebSocket fará um "emit" enviando a palavra
         # para que o servidor possa transmiti-la para os outros jogadores.
         
         # Transita o Host para a tela de jogo informando a palavra secreta
-        game_view = GameView(secret_word=word, is_host=True)
+        game_view = GameView(secret_word=word, is_host=True, network=self.network)
         self.window.show_view(game_view)
 
     def on_draw(self):
