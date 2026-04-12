@@ -66,24 +66,24 @@ Mensagens são JSON delimitadas por `\n`.
 
 ### 2. `MenuView` — [client/views/menu_view.py](client/views/menu_view.py) — **@João Miguel**
 
-- [ ] Substituir o campo "CÓDIGO-123" por **dois inputs**: `Nome` e `Host` (ex.: `127.0.0.1:32348`).
-- [ ] No `on_click_connect`:
-  - [ ] Validar nome não vazio e parsear `host:port`.
-  - [ ] Instanciar `NetworkClient` e chamar `connect(...)`; guardar em `self.window.network`.
-  - [ ] Desabilitar o botão "Conectar" após sucesso.
-- [ ] Implementar `on_update`:
-  - [ ] Drenar `window.network.poll()`.
-  - [ ] Ao receber lista de lobby, **substituir** o mock `mock_players` por labels dinâmicos reais (reconstruir `players_box`).
-  - [ ] Ao receber `{"acao": "voce_e_o_host"}`, marcar `self.is_host = True` e **mostrar** o botão "Iniciar Partida"; caso contrário mantê-lo oculto.
-- [ ] `on_click_start` (só aparece pro host): transicionar para `HostView` passando `self.window.network`.
-- [ ] Tratamento do botão "Iniciar Partida":
-  - [ ] Visível apenas quando `self.is_host` for `True` (esconder via `v_box` condicional ou remover/readicionar).
+- [x] Substituir o campo "CÓDIGO-123" por **dois inputs**: `Nome` e `Host` (ex.: `127.0.0.1:32348`).
+- [x] No `on_click_connect`:
+  - [x] Validar nome não vazio e parsear `host:port`.
+  - [x] Instanciar `NetworkClient` e chamar `connect(...)`; guardar em `self.window.network`.
+  - [x] Desabilitar o botão "Conectar" após sucesso.
+- [x] Implementar `on_update`:
+  - [x] Drenar `window.network.poll()`.
+  - [x] Ao receber lista de lobby, **substituir** o mock `mock_players` por labels dinâmicos reais (reconstruir `players_box`).
+  - [x] Ao receber `{"acao": "voce_e_o_host"}`, marcar `self.is_host = True` e **mostrar** o botão "Iniciar Partida"; caso contrário mantê-lo oculto.
+- [x] `on_click_start` (só aparece pro host): transicionar para `HostView` passando `self.window.network`.
+- [x] Tratamento do botão "Iniciar Partida":
+  - [x] Visível apenas quando `self.is_host` for `True` (esconder via `v_box` condicional ou remover/readicionar).
 
 ### 3. `HostView` — [client/views/host_view.py](client/views/host_view.py) — **@João Miguel**
 
-- [ ] Receber `network` no `__init__` (`HostView(network)`).
-- [ ] `on_click_submit`: chamar `self.network.send_word(word)` em vez de só mudar de view localmente.
-- [ ] Após enviar, transicionar para `GameView(secret_word=word, is_host=True, network=self.network)`.
+- [x] Receber `network` no `__init__` (`HostView(network)`).
+- [x] `on_click_submit`: chamar `self.network.send_word(word)` em vez de só mudar de view localmente.
+- [x] Após enviar, transicionar para `GameView(secret_word=word, is_host=True, network=self.network)`.
 
 ### 4. `GameView` — [client/views/game_view.py](client/views/game_view.py) — **@Pablo Vinicíus**
 
