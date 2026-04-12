@@ -62,7 +62,7 @@ Mensagens são JSON delimitadas por `\n`.
   - [x] Método `poll() -> list[dict]` — drena a fila sem bloquear (para ser chamado em `on_update`).
   - [x] Método `disconnect()` — fecha sockets e encerra threads.
 - [x] Tratar `ConnectionRefusedError` / `ConnectionResetError` / JSON inválido sem derrubar a thread.
-- [ ] Guardar a instância em `window.network` para ser compartilhada entre as views.
+- [x] Guardar a instância em `window.network` para ser compartilhada entre as views.
 
 ### 2. `MenuView` — [client/views/menu_view.py](client/views/menu_view.py) — **@João Miguel**
 

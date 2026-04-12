@@ -56,53 +56,92 @@ def is_game_started():
     
     return game_started
 
-def guess_letter(letter: str, player: object, host: object):
+def handle_guess(guess_str: str, player: object, host: object) -> dict:
+    """
+    Substitui a antiga guess_letter.
+    Recebe a string e identifica internamente se é tentativa de LETRA ou PALAVRA.
+    Retorna um dicionário com o status de acerto e a pontuação ganha.
+    """
+    global current_word, revealed_letters, used_letters
     
     with guess_lock:
-        global revealed_letters
-        global players_who_guessed
+        guess_str = guess_str.strip().upper()
+        earned_points = 0
         
-        is_guess_correct = False
-        
-        
-        if letter in used_letters:
-            return {
-            "revealed_letters": revealed_letters,
-            "correct": False,
-            "remaining_attempts": player.remaining_attempts
-        }
-        
-        used_letters.add(letter)
-        
-        if letter in current_word:
-            players_who_guessed += 1
-            for i, char in enumerate(current_word):
-                if letter == char:
-                    revealed_letters[i] = letter
-                    is_guess_correct = True
-                    
-                    
-        else :
-            player.remaining_attempts -= 1
-            if player.remaining_attempts == 0:
-                host.score += 100 *(60 - remaining_time) / 60
+        # ==========================================
+        # 1. TENTATIVA DE PALAVRA COMPLETA (Chute)
+        # ==========================================
+        if len(guess_str) > 1:
+            if guess_str == current_word:
+                # O jogador acertou a palavra:
+                earned_points = calculate_score()
+                return {"correct": True, "score": earned_points}
             
-        return {
-            "revealed_letters": revealed_letters,
-            "correct": is_guess_correct,
-            "remaining_attempts": player.remaining_attempts
-        }
+            else:
+                # Errou o chute da palavra: perde uma tentativa
+                player.remaining_attempts -= 1
+                return {"correct": False, "score": 0}
+                
+        # ==========================================
+        # 2. TENTATIVA DE LETRA ÚNICA
+        # ==========================================
+        else:
+            # Evita punir se a letra já foi tentada
+            if guess_str in used_letters:
+                return {"correct": False, "score": 0} 
+                
+            used_letters.add(guess_str)
+            
+            if guess_str in current_word:
+                # Acertou a letra: atualiza a lista de reveladas
+                for i, char in enumerate(current_word):
+                    if char == guess_str:
+                        revealed_letters[i] = guess_str
+                        
+                # Verifica se ESSA letra foi a última necessária para preencher a palavra
+                if "_" not in revealed_letters:
+                    earned_points = calculate_score() 
+                    return {"correct": True, "score": earned_points}
+                
+                # Acertou uma letra qualquer no meio do jogo
+                return {"correct": True, "score": 0}
+            else:
+                # Errou a letra
+                player.remaining_attempts -= 1
+                return {"correct": False, "score": 0}
         
-def calculate_score(score: int):
+def calculate_score() -> int:
+    """
+    Calcula a pontuação da rodada usando base de 1000 pontos.
+    Fatores de redução: tempo restante e caracteres revelados.
+    """
+    global remaining_time, revealed_letters, current_word
     
-    global remaining_time
-    global players_who_guessed
+    base_score = 1000
     
-    time_factor = remaining_time / 60
+    # Se respondeu em menos de 15s (remaining_time >= 45), o time_factor é 1.0 (100%).
+    # Se demorou mais, cai proporcionalmente. Ex: 30s restantes = 30 / 45 = 0.66
+    time_factor = min(1.0, remaining_time / 45.0)
     
-    score -= (players_who_guessed * time_factor)
+    # Conta quantos espaços já foram descobertos (diferentes de '_')
+    revealed_count = len([char for char in revealed_letters if char != "_"])
     
-    return score
+    if revealed_count <= 1:
+        # Margem de tolerância: 0 ou 1 caractere revelado não altera o multiplicador
+        reveal_factor = 1.0
+    else:
+        # A partir de 2 caracteres, o fator diminui progressivamente.
+        # Usa o tamanho total da palavra para ser proporcional.
+        total_chars = len(current_word)
+        safe_length = max(2, total_chars) # Evita divisão por zero (além da checagem do front)
+        
+        # Exemplo: Palavra de 6 letras. 3 reveladas.
+        # (3 - 1) / (6 - 1) = 2 / 5 = 0.4. Multiplicador será 1.0 - 0.4 = 0.6 (60%)
+        # Limitamos com o max(0.1, ...) para garantir que nunca zere completamente ou fique negativo.
+        reveal_factor = max(0.1, 1.0 - ((revealed_count - 1) / (safe_length - 1)))
+        
+    final_score = int(base_score * time_factor * reveal_factor)
+    return final_score
 
 def is_game_over(players: list) -> tuple[bool, dict]:
     
