@@ -5,13 +5,14 @@ from .host_view import HostView
 from .podium_view import PodiumView 
 
 class GameView(arcade.View):
-    def __init__(self, secret_word="PALAVRA", is_host=True, scores=None, current_round=1, total_rounds=4):
+    def __init__(self, network,secret_word="PALAVRA", is_host=True, scores=None, current_round=1, total_rounds=4):
         super().__init__()
         self.manager = arcade.gui.UIManager()
         
         # --- ESTADOS DA PARTIDA E DA REDE ---
         self.secret_word = secret_word.upper()
         self.is_host = is_host
+        self.network = network
         
         # Gestão de Rodadas e Pontos
         self.current_round = current_round
@@ -104,7 +105,9 @@ class GameView(arcade.View):
         if self.attempts_left <= 0 or self.is_game_over: return
         guess = self.guess_input.text.strip().upper()
         if not guess: return
-        print(f"Tentativa: {guess}")
+        
+        self.network.send_letter(guess)
+        
         
     def on_show_view(self):
         self.manager.enable()
@@ -114,19 +117,40 @@ class GameView(arcade.View):
         self.manager.disable()
 
     def on_update(self, delta_time):
-        """Loop local de update"""
+        
         if self.is_game_over:
             return
+        
+        messages_list = self.network.poll()
+        
+        for msg in messages_list:
+            
+            if "tempo" in msg:
+                self.time_left = msg["tempo"]
+                
+            if "remaining_attempts" in msg:
+                self.attempts_left = msg["remaining_attempts"]
+                
+            if "score" in msg:
+                self.scores["1. Você"] += msg["score"]
+                
+            if "revealed_letters" in msg:
+                
+                letters = set(
+                    letter
+                    for letter in msg["revealed_letters"]
+                    if letter != "_"
+                )
+                
+                self.guessed_letters = letters
+                
+                self.build_word_display()
+                
+            if msg.get("acao") in {"game_over_word_guessed", "game_over_attempts_exhausted"}:
+                self.is_game_over = True 
+                self.handle_round_transition()
 
-        self.time_left -= delta_time
         self.update_interface_text()
-
-        # Condição de fim de rodada
-        if self.time_left <= 0:
-            self.time_left = 0
-            self.is_game_over = True
-            print("O tempo acabou! Avaliando para onde ir...")
-            self.handle_round_transition()
 
     def handle_round_transition(self):
         """
@@ -148,14 +172,15 @@ class GameView(arcade.View):
         
         if i_am_next_host:
             # Sou o próximo a escolher a palavra, não vejo as pontuações e vou escrever
-            self.window.show_view(HostView())
+            self.window.show_view(HostView(self.network))
         else:
             # Sou jogador novamente, fico aguardando e avalio como estão meus pontos
             # Passo meu dicionário de scores, rodada atual e o total pra tela de espera exibir
             self.window.show_view(PlayerWaitingView(
                 scores=self.scores,
                 current_round=self.current_round,
-                total_rounds=self.total_rounds
+                total_rounds=self.total_rounds,
+                network=self.network
             ))
 
     def on_draw(self):

@@ -13,7 +13,7 @@ Documento de trabalho para conectar as views em [client/views/](client/views/) c
 
 | Dev | Arquivos | Escopo |
 | --- | --- | --- |
-| **Davi** | `client/network.py`, `client/main.py` | Fundação de rede + bootstrap da janela |
+| **Davi** | `client/network.py`, `client/main.py`, `client/views/game_view.py` | Fundação de rede + bootstrap da janela + partida (em co-autoria) |
 | **João Miguel** | `client/views/menu_view.py`, `client/views/host_view.py` | Fluxo de entrada (lobby + escolha da palavra) |
 | **Pablo Vinicíus** | `client/views/game_view.py`, `client/views/player_waiting_view.py`, `client/views/podium_view.py` | Fluxo de jogo (partida + espera entre rodadas + pódio) |
 
@@ -85,20 +85,20 @@ Mensagens são JSON delimitadas por `\n`.
 - [x] `on_click_submit`: chamar `self.network.send_word(word)` em vez de só mudar de view localmente.
 - [x] Após enviar, transicionar para `GameView(secret_word=word, is_host=True, network=self.network)`.
 
-### 4. `GameView` — [client/views/game_view.py](client/views/game_view.py) — **@Pablo Vinicíus**
+### 4. `GameView` — [client/views/game_view.py](client/views/game_view.py) — **@Pablo Vinicíus** e **@Davi**
 
-- [ ] Receber `network` no `__init__`.
-- [ ] `on_guess_submit`: chamar `self.network.send_letter(guess)` — remover lógica local de acerto.
-- [ ] `on_update`:
-  - [ ] Drenar `self.network.poll()`.
-  - [ ] Para cada mensagem:
-    - [ ] `revealed_letters` → atualizar `self.guessed_letters` a partir das posições preenchidas e chamar `build_word_display()`.
-    - [ ] `remaining_attempts` → atualizar `self.attempts_left` e `update_interface_text()`.
-    - [ ] `score` → acumular em `self.scores["1. Você"]` (placeholder até o broadcast real).
-    - [ ] `tempo` (UDP) → atualizar `self.time_left` em vez do decremento local.
-    - [ ] `acao == "game_over_word_guessed"` ou `"game_over_attempts_exhausted"` → `self.is_game_over = True`; chamar `handle_round_transition()`.
-- [ ] Remover o decremento local `self.time_left -= delta_time` (o timer agora vem do UDP).
-- [ ] `handle_round_transition`: passar `self.network` para `HostView`/`PlayerWaitingView`/`PodiumView`.
+- [x] Receber `network` no `__init__`.
+- [x] `on_guess_submit`: chamar `self.network.send_letter(guess)` — remover lógica local de acerto.
+- [x] `on_update`:
+  - [x] Drenar `self.network.poll()`.
+  - [x] Para cada mensagem:
+    - [x] `revealed_letters` → atualizar `self.guessed_letters` a partir das posições preenchidas e chamar `build_word_display()`.
+    - [x] `remaining_attempts` → atualizar `self.attempts_left` e `update_interface_text()`.
+    - [x] `score` → acumular em `self.scores["1. Você"]` (placeholder até o broadcast real).
+    - [x] `tempo` (UDP) → atualizar `self.time_left` em vez do decremento local.
+    - [x] `acao == "game_over_word_guessed"` ou `"game_over_attempts_exhausted"` → `self.is_game_over = True`; chamar `handle_round_transition()`.
+- [x] Remover o decremento local `self.time_left -= delta_time` (o timer agora vem do UDP).
+- [x] `handle_round_transition`: passar `self.network` para `HostView`/`PlayerWaitingView`/`PodiumView`. *(PodiumView segue comentado — fora do escopo.)*
 
 ### 5. `PlayerWaitingView` — [client/views/player_waiting_view.py](client/views/player_waiting_view.py) — **@Pablo Vinicíus**
 
