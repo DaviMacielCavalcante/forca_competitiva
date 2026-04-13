@@ -125,6 +125,9 @@ class MenuView(arcade.View):
             elif isinstance(msg, dict) and msg.get("acao") == "voce_e_o_host":
                 self.is_host = True
                 self.start_button.visible = True
+                
+            elif isinstance(msg, dict) and msg.get("acao") == "partida_iniciada":
+                self.window.show_view(PlayerWaitingView(network=self.window.network, scores={}))
 
     def on_click_connect(self, event):
         nome = self.nome_input.text.strip()

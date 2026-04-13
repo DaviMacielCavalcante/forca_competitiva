@@ -78,6 +78,7 @@ Mensagens são JSON delimitadas por `\n`.
 - [x] `on_click_start` (só aparece pro host): transicionar para `HostView` passando `self.window.network`.
 - [x] Tratamento do botão "Iniciar Partida":
   - [x] Visível apenas quando `self.is_host` for `True` (esconder via `v_box` condicional ou remover/readicionar).
+- [ ] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver Fase 8).
 
 ### 3. `HostView` — [client/views/host_view.py](client/views/host_view.py) — **@João Miguel**
 
@@ -117,6 +118,18 @@ Mensagens são JSON delimitadas por `\n`.
 
 - [x] Inicializar `window.network = None` antes de mostrar a `MenuView`.
 - [x] Remover `sys.path.append('../client/views')` (e o `import sys` que ficou órfão). Motivo: caminhos relativos são resolvidos a partir do **cwd** em que o `python` foi invocado, não do diretório do script — então `'../client/views'` apontava pra fora do repositório e nem existia. Mesmo assim a importação `from views.menu_view import MenuView` funcionava, porque quando se roda `python client/main.py` a partir do repo root, o Python já adiciona automaticamente o diretório do script (`client/`) em `sys.path[0]`, e `client/views/` é um pacote (tem `__init__.py`). O `append` era gambiarra inútil: não fazia diferença nenhuma e ainda poluía o `sys.path` com um caminho inexistente.
+
+### 8. Servidor — fim de rodada autônomo e notificação de partida — **@Davi**
+
+Trabalho de backend para fechar dois gaps descobertos durante a integração:
+
+- [x] **`server/round.py`** — novo módulo com `end_round(reason: dict)` que centraliza a sequência de encerramento: `stop_timer` → `broadcast_game_state` → `rotate_host` → `notify_host` → `reset_round`. Motivo: a lógica estava inline no `tcp_server` e era duplicada entre os gatilhos de fim de rodada.
+- [x] **`server/tcp_server.py`** — substituir o bloco inline do `if game_over` por uma chamada única a `end_round(reason)`. Remover o `elif get_remaining_time() == 0` (nunca foi fim de rodada de verdade: reiniciava o timer).
+- [x] **`server/udp_server.py`** — a thread do `timer`, ao sair do loop, verifica `stop_event.is_set()`. Se `False`, significa que o tempo zerou sozinho → chama `end_round({"acao": "game_over_time_expired"})`. Import tardio dentro da função para evitar ciclo com `server.round`.
+- [x] **`game/hangman.py`** — `reset_round` agora recebe `dict[str, Player]` e itera `.values()` internamente (antes recebia "list" e quebrava quando chamado com o dict do lobby).
+- [x] **`lobby/lobby.py`** — adicionar `notify_game_started(host_id)` que envia `{"acao": "partida_iniciada"}` para todos os jogadores exceto o host.
+- [x] **`server/tcp_server.py`** — após `notify_host(host_id)` no momento em que o jogo arranca, chamar `notify_game_started(host_id)` para que os não-hosts saiam da `MenuView`.
+- [x] **`client/views/game_view.py`** — reconhecer `{"acao": "game_over_time_expired"}` no dispatch do `on_update` (hoje só trata `game_over_word_guessed` e `game_over_attempts_exhausted`).
 
 ## Pontos em aberto (pós-integração)
 

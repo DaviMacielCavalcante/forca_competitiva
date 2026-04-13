@@ -47,6 +47,22 @@ def broadcast_lobby():
         
         players[player["id"]].socket.sendall(players_in_lobby_bytes)
         
+def notify_game_started(host_id: str):
+            
+    notification = {
+        "acao": "partida_iniciada"
+    }
+    
+    notification_json = json.dumps(notification)+"\n"
+    
+    notification_data = notification_json.encode()
+    
+    for player_id, player in players.items():
+        if player_id == host_id:
+            continue
+        player.socket.sendall(notification_data)
+
+        
 def notify_host(player_id: str):
     
     notification = {

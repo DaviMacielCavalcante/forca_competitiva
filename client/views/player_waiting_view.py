@@ -4,7 +4,7 @@ from .game_view import GameView
 from .podium_view import PodiumView # Vamos usar no futuro para a última rodada
 
 class PlayerWaitingView(arcade.View):
-    def __init__(self, network, current_round, total_rounds, scores=None):
+    def __init__(self, network, current_round=1, total_rounds=0, scores={}):
         super().__init__()
         self.network = network
         self.manager = arcade.gui.UIManager()
@@ -62,7 +62,7 @@ class PlayerWaitingView(arcade.View):
         anchor.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
         self.manager.add(anchor)
         
-    def on_update(self):
+    def on_update(self, delta_time):
         
         messages_list = self.network.poll()
         

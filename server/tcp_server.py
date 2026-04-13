@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
-from game.hangman import set_word, add_to_queue, start_game, is_game_started, guess_letter, calculate_score, is_game_over, rotate_host, reset_round, reset_time, is_word_set, get_remaining_time, get_host_id
-from lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state
-from server.udp_server import start_timer, stop_timer
+from game.hangman import set_word, add_to_queue, start_game, is_game_started, handle_guess, is_game_over, is_word_set, get_host_id
+from lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state, notify_game_started
+from server.udp_server import start_timer
+from server.round import end_round
 from loguru import logger
 import socket
 import json
@@ -51,6 +52,7 @@ def handle_connection(conn, addr):
                         host_id = start_game()
                         logger.debug("jogo iniciado: host_id={}, players={}", host_id, list(players.keys()))
                         notify_host(host_id)
+                        notify_game_started(host_id)
                         logger.debug("notificação de host enviada para {}", host_id)
                     except Exception:
                         logger.exception("falha ao iniciar jogo")
@@ -62,31 +64,18 @@ def handle_connection(conn, addr):
 
             if before_as_dict["acao"] == "letra" and is_word_set():
 
-                guess = guess_letter(before_as_dict["letra"], player=players.get(player_id), host=players[get_host_id()])
+                guess = handle_guess(before_as_dict["letra"], player=players.get(player_id), host=players[get_host_id()])
 
-                if guess["correct"]:
-
-                    score = calculate_score(1000)
-
-                    players[player_id].score += score
-                    guess["score"] = score
+                if guess["correct"] and guess.get("score"):
+                    players[player_id].score += guess["score"]
 
                 broadcast_game_state(guess)
 
-                game_over, reason = is_game_over(players=players)
+                game_over, reason = is_game_over(players=players.values())
 
                 if game_over:
-                    guess["acao"] = reason["acao"]
-                    broadcast_game_state(guess)
-                    stop_timer()
-                    new_host_id = rotate_host()
-                    notify_host(new_host_id)
-                    reset_round(players=players)
-                    logger.debug("jogo encerrado ({}), novo host: {}", reason["acao"], new_host_id)
-                elif get_remaining_time() == 0:
-                    reset_time()
-                    start_timer()
-                    logger.debug("timer reiniciado")
+                    end_round(reason)
+                    
 
             message.append(before)
 

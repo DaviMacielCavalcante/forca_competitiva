@@ -162,8 +162,7 @@ def reset_time():
 def is_word_set() -> bool:
     return bool(current_word)
 
-def reset_round(players: list):
-
+def reset_round(players: dict):
 
     global remaining_time
     global players_who_guessed
@@ -178,7 +177,7 @@ def reset_round(players: list):
     revealed_letters = []
     used_letters.clear()
     
-    for player in players:
+    for player in players.values():
         player.remaining_attempts = 3
     
 def get_remaining_time():

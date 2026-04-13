@@ -16,6 +16,9 @@ def timer(server, stop_event: Event):
             server.sendto(data, (player.ip, 32350))
 
         time.sleep(1)
+    if not stop_event.is_set():
+        from server.round import end_round
+        end_round({"acao": "game_over_time_expired"})
 
 def stop_timer():
     global _stop_event
