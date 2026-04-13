@@ -70,7 +70,7 @@ class PlayerWaitingView(arcade.View):
             ## Caso o player se torne o host, transiciona
                 
             if msg.get("acao") == "voce_e_o_host":
-                from host_view import HostView
+                from .host_view import HostView
                 
                 host_view = HostView(network=self.network)
                 self.window.show_view(host_view)

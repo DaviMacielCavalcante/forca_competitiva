@@ -154,8 +154,12 @@ class GameView(arcade.View):
                 
                 self.build_word_display()
                 
+            if msg.get("acao") == "voce_e_o_host":
+                self.window.show_view(HostView(self.network))
+                return
+
             if msg.get("acao") in {"game_over_word_guessed", "game_over_attempts_exhausted", "game_over_time_expired"}:
-                self.is_game_over = True 
+                self.is_game_over = True
                 self.handle_round_transition()
 
         self.update_interface_text()

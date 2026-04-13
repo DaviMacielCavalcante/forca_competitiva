@@ -27,9 +27,12 @@ def handle_connection(conn, addr):
             conn.close()
             break
         buffer += data
-        before, sep, after = buffer.partition(b"\n")
+        while True:
+            before, sep, after = buffer.partition(b"\n")
+            if not sep:
+                break
+            buffer = after
 
-        if sep:
             before_as_dict = json.loads(before)
             logger.debug("mensagem recebida: {}", before_as_dict)
 
@@ -70,13 +73,12 @@ def handle_connection(conn, addr):
                 if guess["correct"] and guess.get("score"):
                     players[player_id].score += guess["score"]
 
-                broadcast_game_state(guess)
+                broadcast_game_state({**guess, "revealed_letters": get_revealed_letters()})
 
                 game_over, reason = is_game_over(players=players.values())
 
                 if game_over:
                     end_round(reason)
-                    
 
             message.append(before)
 
@@ -90,7 +92,6 @@ def handle_connection(conn, addr):
 
             conn.sendall(ack_data)
 
-            buffer = after
 
 if __name__ == "__main__":
     import os
