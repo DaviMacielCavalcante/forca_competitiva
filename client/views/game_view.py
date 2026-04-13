@@ -125,14 +125,19 @@ class GameView(arcade.View):
         
         for msg in messages_list:
             
+            if not isinstance(msg, dict):
+                continue
+            
             if "tempo" in msg:
                 self.time_left = msg["tempo"]
                 
             if "remaining_attempts" in msg:
                 self.attempts_left = msg["remaining_attempts"]
                 
+            # mockado, resolver    
             if "score" in msg:
-                self.scores["1. Você"] += msg["score"]
+                self.scores= {}
+
                 
             if "revealed_letters" in msg:
                 
@@ -143,6 +148,9 @@ class GameView(arcade.View):
                 )
                 
                 self.guessed_letters = letters
+                
+                if not self.is_host:
+                    self.secret_word = "".join(msg["revealed_letters"])
                 
                 self.build_word_display()
                 

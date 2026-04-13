@@ -1,5 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
-from game.hangman import set_word, add_to_queue, start_game, is_game_started, handle_guess, is_game_over, is_word_set, get_host_id
+from game.hangman import set_word, add_to_queue, start_game, is_game_started, handle_guess, is_game_over, is_word_set, get_host_id, get_revealed_letters
 from lobby.lobby import enter_lobby, leave_lobby, broadcast_lobby, notify_host, players, broadcast_game_state, notify_game_started
 from server.udp_server import start_timer
 from server.round import end_round
@@ -60,6 +60,7 @@ def handle_connection(conn, addr):
             if before_as_dict["acao"] == "palavra":
                 set_word(before_as_dict["palavra"])
                 start_timer()
+                broadcast_game_state({"revealed_letters": get_revealed_letters()})
                 logger.debug("palavra definida, timer iniciado")
 
             if before_as_dict["acao"] == "letra" and is_word_set():

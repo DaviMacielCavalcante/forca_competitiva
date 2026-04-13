@@ -41,6 +41,9 @@ def set_word(word: str):
 def get_host_id():
     return host_id
 
+def get_revealed_letters():
+    return revealed_letters
+
 def start_game():
     
     global host_id    

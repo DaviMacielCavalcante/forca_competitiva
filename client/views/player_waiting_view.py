@@ -77,7 +77,7 @@ class PlayerWaitingView(arcade.View):
             
             if "revealed_letters" in msg:
                 
-                word = set(
+                word = "".join(
                     letter for letter in msg["revealed_letters"]
                 )
                 
@@ -100,7 +100,8 @@ class PlayerWaitingView(arcade.View):
             is_host=False, 
             scores=self.scores,
             current_round=self.current_round + 1,
-            total_rounds=self.total_rounds
+            total_rounds=self.total_rounds,
+            network=self.network
         )
         self.window.show_view(game_view)
 
