@@ -17,7 +17,7 @@ class GameView(arcade.View):
         # Gestão de Rodadas e Pontos
         self.current_round = current_round
         self.total_rounds = total_rounds
-        self.scores = scores if scores is not None else {"1. Você": 0, "2. Jogador B": 0, "3. Jogador C": 0}
+        self.scores = scores 
 
         self.attempts_left = 3
         self.time_left = 60.0
@@ -160,11 +160,12 @@ class GameView(arcade.View):
         # 1. Verifica se foi a última rodada da partida
         if self.current_round >= self.total_rounds:
             print("Partida finalizada! Movendo para o Podium View...")
-            # Quando criar o podium_view, ative esta linha:
-            # self.window.show_view(PodiumView(scores=self.scores))
+            # Transicao ao podio
+            self.window.show_view(PodiumView(scores=self.scores))
             return
             
         # 2. Se a partida continua, o sistema de rede deve dizer quem é o próximo Host.
+        
         # Aqui, simularemos uma variável que virá da sua rede:
         i_am_next_host = False # TODO: Substitua por validação real via WebSockets
     

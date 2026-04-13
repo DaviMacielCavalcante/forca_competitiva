@@ -4,12 +4,13 @@ from .game_view import GameView
 from .podium_view import PodiumView # Vamos usar no futuro para a última rodada
 
 class PlayerWaitingView(arcade.View):
-    def __init__(self, scores=None, current_round=1, total_rounds=4):
+    def __init__(self, network, current_round, total_rounds, scores=None):
         super().__init__()
+        self.network = network
         self.manager = arcade.gui.UIManager()
         
         # Estados da partida recebidos pela transição
-        self.scores = scores if scores is not None else {"1. Você": 0, "2. Jogador B": 0, "3. Jogador C": 0}
+        self.scores = scores
         self.current_round = current_round
         self.total_rounds = total_rounds
 
@@ -60,6 +61,27 @@ class PlayerWaitingView(arcade.View):
         anchor = arcade.gui.UIAnchorLayout()
         anchor.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
         self.manager.add(anchor)
+        
+    def on_update(self):
+        
+        messages_list = self.network.poll()
+        
+        for msg in messages_list:
+            ## Caso o player se torne o host, transiciona
+                
+            if msg.get("acao") == "voce_e_o_host":
+                from host_view import HostView
+                
+                host_view = HostView(network=self.network)
+                self.window.show_view(host_view)
+            
+            if "revealed_letters" in msg:
+                
+                word = set(
+                    letter for letter in msg["revealed_letters"]
+                )
+                
+                self.on_receive_game_start(secret_word_from_server=word)
 
     def on_show_view(self):
         self.manager.enable()

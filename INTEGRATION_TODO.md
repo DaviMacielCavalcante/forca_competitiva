@@ -102,11 +102,11 @@ Mensagens são JSON delimitadas por `\n`.
 
 ### 5. `PlayerWaitingView` — [client/views/player_waiting_view.py](client/views/player_waiting_view.py) — **@Pablo Vinicíus**
 
-- [ ] Receber `network` no `__init__`.
-- [ ] Implementar `on_update`:
-  - [ ] Drenar `self.network.poll()`.
-  - [ ] `{"acao": "voce_e_o_host"}` → transicionar para `HostView(self.network)`.
-  - [ ] `revealed_letters` recebido → rodada começou; transicionar para `GameView(is_host=False, network=self.network, ...)` (passando a palavra reconstruída a partir das letras reveladas + `_`).
+- [x] Receber `network` no `__init__`.
+- [x] Implementar `on_update`:
+  - [x] Drenar `self.network.poll()`.
+  - [x] `{"acao": "voce_e_o_host"}` → transicionar para `HostView(self.network)`.
+  - [x] `revealed_letters` recebido → rodada começou; transicionar para `GameView(is_host=False, network=self.network, ...)` (passando a palavra reconstruída a partir das letras reveladas + `_`).
 
 ### 6. `PodiumView` — [client/views/podium_view.py](client/views/podium_view.py) — **@Pablo Vinicíus**
 

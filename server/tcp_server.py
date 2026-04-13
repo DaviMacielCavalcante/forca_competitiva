@@ -66,7 +66,7 @@ def handle_connection(conn, addr):
 
                 if guess["correct"]:
 
-                    score = calculate_score(100)
+                    score = calculate_score(1000)
 
                     players[player_id].score += score
                     guess["score"] = score
