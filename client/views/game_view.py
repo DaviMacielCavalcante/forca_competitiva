@@ -101,12 +101,15 @@ class GameView(arcade.View):
             self.attempts_label.text = f"Tentativas: {self.attempts_left}/3"
 
     def on_guess_submit(self, event):
-        # Lógica resumida (idêntica ao passo anterior)
         if self.attempts_left <= 0 or self.is_game_over: return
         guess = self.guess_input.text.strip().upper()
         if not guess: return
         
-        self.network.send_letter(guess)
+        # Envia a tentativa (seja uma letra ou a palavra inteira)
+        self.network.send_guess(guess)
+        
+        # Bônus de UX: Limpa o input field após enviar a tentativa
+        self.guess_input.text = ""
         
         
     def on_show_view(self):

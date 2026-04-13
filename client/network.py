@@ -145,15 +145,20 @@ class NetworkClient:
         
         self._send(message=word_dict)
 
-    def send_letter(self, letter: str):
-        
-        letter_dict = {
-            "acao": "letra",
-            "letra": letter
-        }
-        
-        self._send(message=letter_dict)
+    # Arquivo: network.py (dentro da classe NetworkClient)
 
+    # Substitua o método send_letter por este:
+    def send_guess(self, guess: str):
+        guess_dict = {
+            "acao": "tentativa",
+            "tentativa": guess
+        }
+        self._send(message=guess_dict)
+
+        # Não esqueça de atualizar na classe FakeNetworkClient também, caso a utilize:
+        # def send_guess(self, guess: str):
+        #     pass
+    
     def disconnect(self):
         
         self._running = False
@@ -198,7 +203,7 @@ class FakeNetworkClient:
         
         pass
 
-    def send_letter(self, letter: str):
+    def send_guess(self, letter: str):
         
         pass
 

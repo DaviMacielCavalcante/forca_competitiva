@@ -1,4 +1,4 @@
-from views.menu_view import MenuView
+from .views.menu_view import MenuView
 import arcade
 
 

@@ -78,6 +78,13 @@ def handle_guess(guess_str: str, player: object, host: object) -> dict:
             if guess_str == current_word:
                 # O jogador acertou a palavra:
                 earned_points = calculate_score()
+                
+                # --- NOVO CÓDIGO AQUI ---
+                # Revela a palavra inteira para que o is_game_over dispare o final da rodada
+                for i, char in enumerate(current_word):
+                    revealed_letters[i] = char
+                # ------------------------
+                
                 return {"correct": True, "score": earned_points}
             
             else:

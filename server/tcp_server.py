@@ -66,9 +66,11 @@ def handle_connection(conn, addr):
                 broadcast_game_state({"revealed_letters": get_revealed_letters()})
                 logger.debug("palavra definida, timer iniciado")
 
-            if before_as_dict["acao"] == "letra" and is_word_set():
-
-                guess = handle_guess(before_as_dict["letra"], player=players.get(player_id), host=players[get_host_id()])
+            # Substitua a validação de "letra" por "tentativa"
+            if before_as_dict["acao"] == "tentativa" and is_word_set():
+                
+                # Passa a 'tentativa' inteira para o handle_guess processar
+                guess = handle_guess(before_as_dict["tentativa"], player=players.get(player_id), host=players[get_host_id()])
 
                 if guess["correct"] and guess.get("score"):
                     players[player_id].score += guess["score"]

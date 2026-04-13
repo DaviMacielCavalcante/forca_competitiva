@@ -2,7 +2,7 @@ import arcade
 import arcade.gui
 from .host_view import HostView
 from .player_waiting_view import PlayerWaitingView
-from network import NetworkClient
+from ..network import NetworkClient
 
 class MenuView(arcade.View):
     def __init__(self):
