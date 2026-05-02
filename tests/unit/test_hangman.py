@@ -7,6 +7,7 @@ from game import hangman
 @dataclass
 class FakePlayer:
     """Minimal Player stand-in for unit tests."""
+    name: str = "Davi"
     remaining_attempts: int = 3
     score: int = 0
 
@@ -269,3 +270,46 @@ class TestHostQueue:
         rotated = hangman.rotate_host()
         assert rotated == "player-1"
         assert list(hangman.host_deque) == ["player-2", "player-1"]
+
+
+# --- handle_guess: pontuação por letra parcial e last_guesser ---
+
+class TestHandleGuess:
+
+    def test_partial_letter_gives_score(self):
+        """Uma letra correta que não completa a palavra deve render pontos."""
+        hangman.set_word("GATO")
+        result = hangman.handle_guess("G", FakePlayer(), FakePlayer("Host"))
+        assert result["correct"] is True
+        assert result["score"] > 0
+
+    def test_partial_letter_includes_last_guesser(self):
+        """Uma letra parcialmente correta deve incluir last_guesser com nome e letra."""
+        hangman.set_word("GATO")
+        result = hangman.handle_guess("G", FakePlayer("Davi"), FakePlayer("Host"))
+        assert "last_guesser" in result
+        assert result["last_guesser"]["nome"] == "Davi"
+        assert result["last_guesser"]["letra"] == "G"
+
+    def test_wrong_letter_no_last_guesser(self):
+        """Uma letra errada não deve incluir last_guesser."""
+        hangman.set_word("GATO")
+        result = hangman.handle_guess("Z", FakePlayer(), FakePlayer("Host"))
+        assert result["correct"] is False
+        assert "last_guesser" not in result
+
+    def test_repeated_letter_no_last_guesser(self):
+        """Uma letra repetida não deve incluir last_guesser."""
+        hangman.set_word("GATO")
+        player = FakePlayer()
+        hangman.handle_guess("G", player, FakePlayer("Host"))
+        result = hangman.handle_guess("G", player, FakePlayer("Host"))
+        assert "last_guesser" not in result
+
+    def test_word_guess_correct_has_last_guesser(self):
+        """Um chute de palavra correta deve incluir last_guesser com o nome do jogador."""
+        hangman.set_word("GATO")
+        result = hangman.handle_guess("GATO", FakePlayer("Davi"), FakePlayer("Host"))
+        assert result["correct"] is True
+        assert "last_guesser" in result
+        assert result["last_guesser"]["nome"] == "Davi"

@@ -85,8 +85,8 @@ def handle_guess(guess_str: str, player: object, host: object) -> dict:
                     revealed_letters[i] = char
                 # ------------------------
                 
-                return {"correct": True, "score": earned_points}
-            
+                return {"correct": True, "score": earned_points, "last_guesser": {"nome": player.name, "letra": guess_str}}
+
             else:
                 # Errou o chute da palavra: perde uma tentativa
                 player.remaining_attempts -= 1
@@ -110,11 +110,11 @@ def handle_guess(guess_str: str, player: object, host: object) -> dict:
                         
                 # Verifica se ESSA letra foi a última necessária para preencher a palavra
                 if "_" not in revealed_letters:
-                    earned_points = calculate_score() 
-                    return {"correct": True, "score": earned_points}
-                
+                    earned_points = calculate_score()
+                    return {"correct": True, "score": earned_points, "last_guesser": {"nome": player.name, "letra": guess_str}}
+
                 # Acertou uma letra qualquer no meio do jogo
-                return {"correct": True, "score": 0}
+                return {"correct": True, "score": calculate_score(), "last_guesser": {"nome": player.name, "letra": guess_str}}
             else:
                 # Errou a letra
                 player.remaining_attempts -= 1

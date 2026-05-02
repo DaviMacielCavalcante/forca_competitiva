@@ -131,9 +131,32 @@ Trabalho de backend para fechar dois gaps descobertos durante a integração:
 - [x] **`server/tcp_server.py`** — após `notify_host(host_id)` no momento em que o jogo arranca, chamar `notify_game_started(host_id)` para que os não-hosts saiam da `MenuView`.
 - [x] **`client/views/game_view.py`** — reconhecer `{"acao": "game_over_time_expired"}` no dispatch do `on_update` (hoje só trata `game_over_word_guessed` e `game_over_attempts_exhausted`).
 
-## Pontos em aberto (pós-integração)
+### 9. `MenuView` — broadcast `partida_iniciada` para não-hosts — **@João Miguel**
 
-- Broadcast de placar agregado do servidor para os clientes.
-- Identificação do autor de cada acerto (incluir `player_id`/`nome` em `broadcast_game_state`).
-- Fluxo de reconexão/queda do servidor.
-- Mensagem de "partida terminada" para ir ao `PodiumView` (hoje o servidor não envia nada específico para fim de partida, só fim de rodada).
+- [ ] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver item 8).
+
+### 10. `PodiumView` — desconexão ao voltar ao menu — **@Pablo Vinicíus**
+
+- [ ] Receber `network` opcional no `__init__`.
+- [ ] No botão "Back to Menu", chamar `network.disconnect()` antes de voltar pro `MenuView()`.
+
+### 11. Placar agregado — **a definir**
+
+- [ ] Broadcast de placar agregado do servidor para os clientes.
+- [ ] Atualizar `GameView`/`PodiumView` para exibir o placar acumulado por rodada.
+
+### 12. Identificação do autor do acerto — **a definir**
+
+- [ ] Incluir `player_id`/`nome` em `broadcast_game_state` ao acertar uma letra.
+- [ ] Exibir o nome do acertador na `GameView`.
+
+### 13. Reconexão / queda do servidor — **a definir**
+
+- [ ] Detectar `ConnectionResetError` / timeout nas threads de leitura.
+- [ ] Exibir mensagem de erro e redirecionar para `MenuView`.
+
+### 14. Fim de partida → `PodiumView` — **a definir**
+
+- [ ] Definir mensagem de protocolo `{"acao": "partida_terminada", "scores": {...}}`.
+- [ ] Servidor enviar essa mensagem após a última rodada.
+- [ ] Clientes transitoriarem para `PodiumView` ao recebê-la.
