@@ -67,6 +67,10 @@ class PlayerWaitingView(arcade.View):
         messages_list = self.network.poll()
         
         for msg in messages_list:
+            
+            if not isinstance(msg, dict): 
+                continue
+            
             ## Caso o player se torne o host, transiciona
                 
             if msg.get("acao") == "voce_e_o_host":
@@ -82,7 +86,7 @@ class PlayerWaitingView(arcade.View):
                 )
                 
                 self.on_receive_game_start(secret_word_from_server=word)
-
+                
     def on_show_view(self):
         self.manager.enable()
         # Regra "The Table"

@@ -16,7 +16,7 @@ class PodiumView(arcade.View):
         }
 
         # Ordena os jogadores por pontuação (do maior para o menor)
-        self.sorted_players = sorted(self.scores.items(), key=lambda item: item[1], reverse=True)
+        self.sorted_players = sorted(self.scores.items(), key=lambda item: item[1]["score"], reverse=True)
         print(self.sorted_players)
 
         # Layout Vertical principal

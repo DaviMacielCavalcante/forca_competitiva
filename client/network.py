@@ -105,6 +105,7 @@ class NetworkClient:
         self._tcp_socket.connect((host, port))
         
         self._udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._udp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # escuta na porta em todas as interfaces locais
         self._udp_socket.bind(("", 32350))
         
