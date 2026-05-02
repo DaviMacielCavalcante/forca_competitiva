@@ -17,7 +17,8 @@ class GameView(arcade.View):
         # Gestão de Rodadas e Pontos
         self.current_round = current_round
         self.total_rounds = total_rounds
-        self.scores = scores 
+        self.scores = scores or {}
+        self._notifications: list[tuple[str, float]] = []
 
         self.attempts_left = 3
         self.time_left = 60.0
@@ -79,8 +80,12 @@ class GameView(arcade.View):
             host_msg = arcade.gui.UILabel(text="Você é o Host. Acompanhe os jogadores!", font_size=14, text_color=arcade.color.DARK_GRAY)
             self.v_box.add(host_msg.with_background(color=arcade.color.WHITE).with_padding(top=10, right=20, bottom=10, left=20))
 
+        self.scores_box = arcade.gui.UIBoxLayout(space_between=5)
+        self._update_scoreboard(self.scores)
+
         anchor = arcade.gui.UIAnchorLayout()
         anchor.add(child=self.v_box, anchor_x="center_x", anchor_y="center_y")
+        anchor.add(child=self.scores_box, anchor_x="right", anchor_y="top", align_x=-10, align_y=-10)
         self.manager.add(anchor)
 
     # (Métodos build_word_display, update_interface_text e on_guess_submit permanecem iguais a versão anterior)
@@ -99,6 +104,21 @@ class GameView(arcade.View):
         self.timer_label.text = f"Tempo: {int(self.time_left)}s"
         if not self.is_host:
             self.attempts_label.text = f"Tentativas: {self.attempts_left}/3"
+
+    def _update_scoreboard(self, scores: dict):
+        self.scores = scores
+        self.scores_box.clear()
+        self.scores_box.add(
+            arcade.gui.UILabel(text="Placar", font_size=14, bold=True, text_color=arcade.color.BLACK)
+        )
+        for data in scores.values():
+            lbl = arcade.gui.UILabel(
+                text=f"{data['nome']}: {data['score']} pts",
+                font_size=12,
+                text_color=arcade.color.BLACK
+            )
+            self.scores_box.add(lbl)
+
 
     def on_guess_submit(self, event):
         if self.attempts_left <= 0 or self.is_game_over: return
@@ -137,9 +157,12 @@ class GameView(arcade.View):
             if "remaining_attempts" in msg:
                 self.attempts_left = msg["remaining_attempts"]
                 
-            # mockado, resolver    
-            if "score" in msg:
-                self.scores= {}
+            if "scores" in msg:
+                self._update_scoreboard(msg["scores"])
+                
+            if "last_guesser" in msg:
+                g = msg["last_guesser"]
+                self._notifications.append((f"{g['nome']} acertou '{g['letra']}'!", 2.5))
 
                 
             if "revealed_letters" in msg:
@@ -164,6 +187,12 @@ class GameView(arcade.View):
             if msg.get("acao") in {"game_over_word_guessed", "game_over_attempts_exhausted", "game_over_time_expired"}:
                 self.is_game_over = True
                 self.handle_round_transition()
+                
+        self._notifications = [
+            (text, t - delta_time)
+            for text, t in self._notifications
+            if t - delta_time > 0
+        ]
 
         self.update_interface_text()
 
@@ -202,3 +231,14 @@ class GameView(arcade.View):
     def on_draw(self):
         self.clear()
         self.manager.draw()
+        
+        if self._notifications:
+            text, _ = self._notifications[0]
+            arcade.draw_text(
+                text,
+                self.window.width / 2,
+                self.window.height - 50,
+                arcade.color.DARK_RED,
+                font_size=16,
+                anchor_x="center",
+            )
