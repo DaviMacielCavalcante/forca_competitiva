@@ -74,8 +74,13 @@ def handle_connection(conn, addr):
 
                 if guess["correct"] and guess.get("score"):
                     players[player_id].score += guess["score"]
+                    
+                scores = {
+                    pid: {"nome": p.name, "score": p.score}
+                    for pid, p in players.items()
+                }
 
-                broadcast_game_state({**guess, "revealed_letters": get_revealed_letters()})
+                broadcast_game_state({**guess, "revealed_letters": get_revealed_letters(), "scores": scores})
 
                 game_over, reason = is_game_over(players=players.values())
 
