@@ -20,10 +20,14 @@ def add_to_queue(player_id: str):
     
 def rotate_host():
     
+    global host_id
+    
     with host_lock:
         player_id = host_deque.popleft()
         
         host_deque.append(player_id)
+        
+    host_id = player_id
         
     return player_id
 
@@ -153,10 +157,10 @@ def calculate_score() -> int:
     final_score = int(base_score * time_factor * reveal_factor)
     return final_score
 
-def is_game_over(players: list) -> tuple[bool, dict]:
+def is_game_over(players: dict) -> tuple[bool, dict]:
     
     players_defeated: bool = all(
-        p.remaining_attempts == 0 for p in players
+        p.remaining_attempts == 0 for pid, p in players.items() if pid != host_id
     )
     
     if revealed_letters and "_" not in revealed_letters:

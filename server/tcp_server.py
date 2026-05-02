@@ -82,7 +82,7 @@ def handle_connection(conn, addr):
 
                 broadcast_game_state({**guess, "revealed_letters": get_revealed_letters(), "scores": scores})
 
-                game_over, reason = is_game_over(players=players.values())
+                game_over, reason = is_game_over(players=players)
 
                 if game_over:
                     end_round(reason)
