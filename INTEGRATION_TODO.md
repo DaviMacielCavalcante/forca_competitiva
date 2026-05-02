@@ -140,15 +140,15 @@ Trabalho de backend para fechar dois gaps descobertos durante a integração:
 - [ ] Receber `network` opcional no `__init__`.
 - [ ] No botão "Back to Menu", chamar `network.disconnect()` antes de voltar pro `MenuView()`.
 
-### 11. Placar agregado — **a definir**
+### 11. Placar agregado — **@Davi**
 
-- [ ] Broadcast de placar agregado do servidor para os clientes.
-- [ ] Atualizar `GameView`/`PodiumView` para exibir o placar acumulado por rodada.
+- [x] Broadcast de placar agregado do servidor para os clientes.
+- [x] Atualizar `GameView`/`PodiumView` para exibir o placar acumulado por rodada.
 
-### 12. Identificação do autor do acerto — **a definir**
+### 12. Identificação do autor do acerto — **@Davi**
 
-- [ ] Incluir `player_id`/`nome` em `broadcast_game_state` ao acertar uma letra.
-- [ ] Exibir o nome do acertador na `GameView`.
+- [x] Incluir `player_id`/`nome` em `broadcast_game_state` ao acertar uma letra.
+- [x] Exibir o nome do acertador na `GameView` (notificação temporária de 2.5s).
 
 ### 13. Reconexão / queda do servidor — **a definir**
 
