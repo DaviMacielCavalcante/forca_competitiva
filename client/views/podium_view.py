@@ -2,11 +2,12 @@ import arcade
 import arcade.gui
 
 class PodiumView(arcade.View):
-    def __init__(self, scores=None):
+    def __init__(self, scores=None, network=None):
         super().__init__()
         self.manager = arcade.gui.UIManager()
         
         # Recebe os pontos da partida (ou gera dados falsos para teste)
+        self.network = network
         self.scores = scores if scores is not None else {
             "1. Você": 2100, 
             "2. Alex Rivera": 1450, 
@@ -124,6 +125,8 @@ class PodiumView(arcade.View):
 
     def on_click_back(self, event):
         from .menu_view import MenuView
+        if self.network:
+            self.network.disconnect()
         self.window.show_view(MenuView())
 
     def on_draw(self):

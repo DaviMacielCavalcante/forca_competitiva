@@ -78,7 +78,7 @@ Mensagens são JSON delimitadas por `\n`.
 - [x] `on_click_start` (só aparece pro host): transicionar para `HostView` passando `self.window.network`.
 - [x] Tratamento do botão "Iniciar Partida":
   - [x] Visível apenas quando `self.is_host` for `True` (esconder via `v_box` condicional ou remover/readicionar).
-- [ ] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver Fase 8).
+- [x] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver Fase 8).
 
 ### 3. `HostView` — [client/views/host_view.py](client/views/host_view.py) — **@João Miguel**
 
@@ -133,12 +133,12 @@ Trabalho de backend para fechar dois gaps descobertos durante a integração:
 
 ### 9. `MenuView` — broadcast `partida_iniciada` para não-hosts — **@João Miguel**
 
-- [ ] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver item 8).
+- [x] Reagir ao broadcast `{"acao": "partida_iniciada"}` do servidor: quando chegar, o jogador (não-host) deve sair do lobby e transicionar para `PlayerWaitingView(network=self.window.network)`. O servidor já dispara esse broadcast automaticamente quando `len(players) >= 2` (ver item 8).
 
 ### 10. `PodiumView` — desconexão ao voltar ao menu — **@Pablo Vinicíus**
 
-- [ ] Receber `network` opcional no `__init__`.
-- [ ] No botão "Back to Menu", chamar `network.disconnect()` antes de voltar pro `MenuView()`.
+- [x] Receber `network` opcional no `__init__`.
+- [x] No botão "Back to Menu", chamar `network.disconnect()` antes de voltar pro `MenuView()`.
 
 ### 11. Placar agregado — **@Davi**
 
